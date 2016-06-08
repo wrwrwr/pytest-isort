@@ -22,17 +22,23 @@ def pytest_addoption(parser):
         'Example: */__init__.py'
     ))
 
+    parser.addini('isort_extensions', type='args', default=[".py"], help=(
+        'extensions of files that should be isorted. '
+        'Example: .py .pyx'
+    ))
+
 
 def pytest_sessionstart(session):
     config = session.config
     if config.option.isort:
         config._isort_mtimes = config.cache.get(MTIMES_HISTKEY, {})
         config._isort_ignore = FileIgnorer(config.getini('isort_ignore'))
+        config._isort_extensions = config.getini('isort_extensions')
 
 
 def pytest_collect_file(path, parent):
     config = parent.config
-    if config.option.isort and path.ext == '.py':
+    if config.option.isort and path.ext in config._isort_extensions:
         if not config._isort_ignore(path):
             return IsortItem(path, parent)
 

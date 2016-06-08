@@ -89,6 +89,25 @@ def test_file_ignored(testdir):
     ])
     assert result.ret == 0
 
+
+def test_extensions(testdir):
+    testdir.tmpdir.ensure('file1.pyx')
+    testdir.tmpdir.ensure('file2.py')
+
+    testdir.makeini("""
+        [pytest]
+        isort_extensions = .py .pyx
+    """)
+
+    result = testdir.runpytest('--isort')
+    result.stdout.fnmatch_lines([
+        'file1.pyx',
+        'file2.py',
+        '*2 passed*',
+    ])
+    assert result.ret == 0
+
+
 def test_correctly_sorted(testdir):
     test_file = testdir.makepyfile("""
         import os
